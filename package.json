@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "prod": "set NODE_ENV=production && nodemon server.js"
+    "prod": "set NODE_ENV=production && nodemon server.js",
+    "debug": "set NODE_ENV=production && ndb server.js"
   },
   "author": "",
   "license": "ISC",
@@ -18,6 +19,7 @@
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-prettier": "^3.1.2",
     "eslint-plugin-react": "^7.18.3",
+    "ndb": "^1.1.5",
     "nodemon": "^2.0.2"
   },
   "dependencies": {

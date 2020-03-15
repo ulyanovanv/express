@@ -5,11 +5,6 @@ module.exports = class APIFeatures {
   }
 
   filter() {
-    // const tours = await Tour.find({
-    //   duration: req.query.duration,
-    //   difficulty: req.query.difficulty
-    // });
-
     // const tours = await Tour.find()
     //   .where('duration')
     //   .equals(req.query.duration)
