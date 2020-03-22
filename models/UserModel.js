@@ -53,10 +53,15 @@ const UserSchema = new mongoose.Schema({
   },
   passwordResetexpires: {
     type: Date
+  },
+  active: {
+    type: Boolean,
+    default: true,
+    select: false
   }
 });
 
-// MIDDLEWARE
+// DOCUMENT MIDDLEWARE
 UserSchema.pre('save', async function(next) {
   // if password was modified, go to next middleware
   if (!this.isModified('password')) return next();
@@ -75,6 +80,11 @@ UserSchema.pre('save', async function(next) {
   next();
 });
 
+// QUERY MIDDLEWARE
+UserSchema.pre(/^find/, function(next) {
+  this.find({active: { $ne: false} });
+  next();
+})
 
 // METHODS
 // on LogIn check if the provided password is equal to given through hash
