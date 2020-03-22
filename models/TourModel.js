@@ -93,7 +93,7 @@ toursSchema.pre('save', function(next) {
 
 // QUERY MIDDLEWARE - runs on query instance
 toursSchema.pre(/^find/, function(next) {
-  this.find({secretTour: { $ne: true} });
+  // this.find({secretTour: { $ne: true} });
   this.start = Date.now();
   next();
 });

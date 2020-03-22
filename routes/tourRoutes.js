@@ -10,7 +10,9 @@ const {
   createTour,
   updateTour,
   deleteTour
-} = require('./../controllers/tourController.js')
+} = require('./../controllers/tourController.js');
+
+const { protect, restrictTo } = require('./../controllers/authController.js');
 
 // router.param('id', checkID)
 
@@ -24,13 +26,17 @@ router.route('/mounthly-plan/:year')
   .get(getMonthlyPlan);
 
 router.route('/')
-  .get(getAlltours)
+  .get(protect, getAlltours)
   .post(createTour);
 // .post(checkForReuqestBody, createTour);
 
 router.route('/:id')
   .get(getTour)
   .patch(updateTour)
-  .delete(deleteTour);
+  .delete(
+    protect,
+    restrictTo('admin', 'lead-guide'),
+    deleteTour
+  );
 
 module.exports = router;

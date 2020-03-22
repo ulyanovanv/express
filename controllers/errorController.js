@@ -13,13 +13,19 @@ const handleDuplicateFieldsDB = err => {
   return new AppError(message, 400);
 }
 
-// fileds validation failed
+// fields validation failed
 const handleValidationDB = err => {
   const errors = Object.values(err.errors).map(obj => obj.message);
   const message = `Invalid input data. ${errors.join(". ")}`;
 
   return new AppError(message, 400);
 }
+
+//JWT error
+const handleJWTError = () => new AppError('Invalid token. Please, login again', 401);
+
+//JWT expired error
+const handleJWTExpiredError = () => new AppError('Your token is expired. Please login again.', 401);
 
 const devError = (err, res) => {
   res.status(err.statusCode).json({
@@ -57,11 +63,13 @@ module.exports = (err, req, res, next) => {
     devError(err, res);
   } else if (process.env.NODE_ENV.trim() === 'production') {
     let error = {...err};
-    console.log(err)
 
     if (error.name === 'CastError') error = handleCastErrorDB(error);
     if (error.code === 11000) error = handleDuplicateFieldsDB(error);
     if (error.name === 'ValidationError') error = handleValidationDB(error);
+
+    if (error.name === 'JsonWebTokenError') error = handleJWTError();
+    if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
 
     prodError(error, res);
   }
