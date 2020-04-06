@@ -1,98 +1,22 @@
 const mongoose = require('mongoose');
 const Tour = require('./../models/TourModel.js');
-const APIFeatures = require('./../utils/apiFeatures.js');
 const catchAsync = require('./../utils/catchAsync.js');
 const AppError = require('./../utils/appError.js');
+const { getAll, getOne, createOne, deleteOne, updateOne } = require('./handlerFactory.js');
 
 const aliasTopTours = (req, res, next) => {
-  // const query = Tour
-  //   .limit(5)
-  //   .sort('-ratingsAverage price');
-
   req.query.limit = 5;
   req.query.sort = '-ratingsAverage,price';
   req.query.fields = 'name,ratingsAverage,price,duration';
   next();
 }
 
-const getAlltours = catchAsync(async (req, res, next) => {
-  const features = new APIFeatures(Tour.find(), req.query)
-    .filter()
-    .sort()
-    .limitFields()
-    .paginate();
+const getAlltours = getAll(Tour);
+const getTour = getOne(Tour, { path: 'reviews' });
+const createTour = createOne(Tour);
+const updateTour = updateOne(Tour);
+const deleteTour = deleteOne(Tour);
 
-  const tours = await features.query;
-
-  res.status(200).json({
-    status: "success",
-    results: tours.length,
-    requetsedAt: req.requestTime,
-    data: {
-      tours: tours
-    }
-  })
-})
-
-const getTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findById(req.params.id);
-  // Tour.findOne({ _id: req.params.id })
-
-  if (!tour) {
-    return next(new AppError(`No tour is available under ${req.params.id} ID`), 404);
-  }
-
-  res.status(200).json({
-    status: "success",
-    data: {
-      tour
-    }
-  })
-})
-
-const createTour = catchAsync(async (req, res, next) => {
-  const newTour = await Tour.create(req.body);
-
-  res.status(201).json({
-    status: 'success',
-    data: {
-      tour: newTour
-    }
-  })
-});
-
-
-const updateTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true
-  })
-
-  if (!tour) {
-    return next(new AppError(`No tour is available under ${req.params.id} ID`), 404);
-  }
-
-  res.status(200).json({
-    status: "success",
-    data: {
-      tour
-    }
-  })
-
-})
-
-const deleteTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findByIdAndDelete(req.params.id);
-
-  if (!tour) {
-    return next(new AppError(`No tour is available under ${req.params.id} ID`), 404);
-  }
-
-  res.status(204).json({
-    status: "success",
-    data: null
-  })
-});
 
 const getTourStats = catchAsync(async (req, res, next) => {
   const stats = await Tour.aggregate([
@@ -170,6 +94,71 @@ const getMonthlyPlan = catchAsync(async (req, res, next) => {
   })
 })
 
+const getToursWithin = catchAsync(async (req, res, next) => {
+  const { distance, latlng, unit} = req.params;
+  const [lat, lng] = latlng.split(',');
+
+  // radius of Eatch in miles - 3963,2
+  const radius = unit === 'miles' ? distance / 3963.2 : distance / 6378.1;
+
+  if (!lat || !lng) {
+    next(new AppError('Please provide latitude and longtitude in the format lat,lng', 400));
+  }
+
+  const tours = await Tour.find({
+    startLocation: {
+      $geoWithin:
+        {
+          $centerSphere: [[lng, lat], radius]
+        }
+      }
+  })
+
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    data: {
+      data: tours
+    }
+  })
+});
+
+const getDistances = catchAsync(async (req, res, next) => {
+  const { latlng, unit} = req.params;
+  const [lat, lng] = latlng.split(',');
+  const multiplier = unit === 'miles' ? 0.000621371 : 0.001;
+
+  if (!lat || !lng) {
+    next(new AppError('Please provide latitude and longtitude in the format lat,lng', 400));
+  }
+
+  const distances = await Tour.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [lng * 1, lat * 1]
+        },
+        distanceField: 'distance',
+        distanceMultiplier: multiplier
+      }
+    },
+    {
+      $project: {
+        distance: 1,
+        name: 1
+      }
+    }
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data: distances
+    }
+  })
+})
+
 module.exports = {
   aliasTopTours,
   getTourStats,
@@ -178,5 +167,7 @@ module.exports = {
   getTour,
   createTour,
   updateTour,
-  deleteTour
+  deleteTour,
+  getToursWithin,
+  getDistances
 }

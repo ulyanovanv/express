@@ -9,6 +9,7 @@ const hpp = require('hpp');
 const app = express();
 const userRouter = require('./routes/userRoutes.js');
 const tourRouter = require('./routes/tourRoutes.js');
+const reviewRouter = require('./routes/reviewRoutes.js');
 const AppError = require('./utils/appError.js');
 const globalErrorhandle = require('./controllers/errorController.js');
 
@@ -62,6 +63,7 @@ app.use((req, res, next) => {
 
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewRouter);
 
 //no route was matched? - error handling
 app.all('*', (req, res, next) => {

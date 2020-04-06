@@ -19,6 +19,7 @@ module.exports = class APIFeatures {
     // ADVANCED FILTERING
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+    // because we get /api/v1/tours?duration[gt]=5
 
     this.query = this.query.find(JSON.parse(queryStr));
 
