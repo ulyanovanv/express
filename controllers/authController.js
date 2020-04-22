@@ -18,7 +18,7 @@ const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
   const cookieOptions = {
     expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
-    httpOnly: true // cookie cannot be accessed elsewhere except browser
+    httpOnly: true // we cannot manipulate the cookie in the browser, means no delete or reset
     //receive cookie, store it and send it automatically along with every request
   }
 
@@ -46,6 +46,8 @@ const protect = catchAsync(async(req, res, next) => {
   // 1. get Token and check it exists in headers
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 
   if (!token) {
@@ -68,8 +70,38 @@ const protect = catchAsync(async(req, res, next) => {
 
   //access it granted
   req.user = freshUser;
+  res.locals.user = freshUser;
   next();
 });
+
+// Only for rendered pages, no errors!
+const isLoggedIn = async(req, res, next) => {
+  if (req.cookies.jwt) {
+    try {
+      // 1. verification of token
+      const decoded = await util.promisify(jwt.verify)(req.cookies.jwt, process.env.JWT_TOKEN);
+
+      // 2. check if the user exists
+      const freshUser = await User.findById(decoded.id);
+      if (!freshUser) {
+        return next();
+      }
+
+      // 3. check if user changed password after JWT was issued
+      if(freshUser.changedPasswordAfter(decoded.iat)) {
+        return next();
+      }
+
+      // there is a logged in user
+      res.locals.user = freshUser;
+      return next();
+    } catch(err) {
+      return next();
+    }
+  }
+
+  next();
+};
 
 //check for authorized roles
 const restrictTo = (...roles) => {
@@ -113,6 +145,14 @@ const login = catchAsync(async(req, res, next) => {
 
   // 3. If everything ok, send token to client
   createSendToken(user, 200, res);
+});
+
+const logout = catchAsync(async(req, res, next) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10*1000),
+    httpOnly: true
+  })
+  res.status(200).json({status: 'success'});
 });
 
 // forgot password - to get resetToken if you do not remember yuor password
@@ -204,4 +244,4 @@ const updatePassword = catchAsync(async(req, res, next) => {
   createSendToken(user, 200, res);
 });
 
-module.exports = { signup, login, protect, restrictTo, forgotPassword, resetPassword, updatePassword };
+module.exports = { signup, login, protect, restrictTo, forgotPassword, resetPassword, updatePassword, isLoggedIn, logout };

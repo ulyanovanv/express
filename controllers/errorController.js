@@ -27,31 +27,59 @@ const handleJWTError = () => new AppError('Invalid token. Please, login again', 
 //JWT expired error
 const handleJWTExpiredError = () => new AppError('Your token is expired. Please login again.', 401);
 
-const devError = (err, res) => {
-  res.status(err.statusCode).json({
-    status: err.status,
-    message: err.message,
-    stack: err.stack,
-    error: err
-  });
+const devError = (err, req, res) => {
+  // API
+  if (req.originalUrl.startsWith('/api')) {
+    res.status(err.statusCode).json({
+      status: err.status,
+      message: err.message,
+      stack: err.stack,
+      error: err
+    });
+  } else {
+    // RENDERED WEBSITE
+    res.status(err.statusCode).render('error', {
+      title: 'Something went wrong!',
+      msg: err.message
+    })
+  }
 }
 
-const prodError = (err, res) => {
-  //operational, trusted errors
-  console.log(err.isOperational)
-  if (err.isOperational) {
-    res.status(err.statusCode).json({
-      message: err.message,
-      status: err.status
-    });
-    //programming or other unknown errors, do not leak details on client
-  } else {
-    console.log('error', err);
+const prodError = (err, req, res) => {
+  // API
+  if (req.originalUrl.startsWith('/api')) {
+    //operational, trusted errors
+    //console.log(err.isOperational)
+    if (err.isOperational) {
+      res.status(err.statusCode).json({
+        message: err.message,
+        status: err.status
+      });
+      //programming or other unknown errors, do not leak details on client
+    } else {
+      console.log('error', err);
 
-    res.status(500).json({
-      status: 'error',
-      message: 'Something went wrong'
-    })
+      res.status(500).json({
+        status: 'error',
+        message: 'Something went wrong'
+      })
+    }
+  } else {
+    // RENDERED WEBSITE
+    if (err.isOperational) {
+      res.status(err.statusCode).render('error', {
+        title: 'Something went wrong!',
+        msg: err.message
+      })
+      //programming or other unknown errors, do not leak details on client
+    } else {
+      console.log('error', err);
+
+      res.status(err.statusCode).render('error', {
+        title: 'Something went wrong!',
+        msg: 'Please try again later'
+      })
+    }
   }
 }
 
@@ -60,9 +88,9 @@ module.exports = (err, req, res, next) => {
   err.status = err.status || 'error';
 
   if (process.env.NODE_ENV === 'development') {
-    devError(err, res);
+    devError(err, req, res);
   } else if (process.env.NODE_ENV.trim() === 'production') {
-    let error = {...err};
+    const error = Object.assign({}, err);
 
     if (error.name === 'CastError') error = handleCastErrorDB(error);
     if (error.code === 11000) error = handleDuplicateFieldsDB(error);
@@ -71,6 +99,6 @@ module.exports = (err, req, res, next) => {
     if (error.name === 'JsonWebTokenError') error = handleJWTError();
     if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
 
-    prodError(error, res);
+    prodError(error, req, res);
   }
 }
