@@ -37,10 +37,18 @@ if (logOutBtn) {
 if (updateForm) {
   btnSaveSettings.addEventListener('click', e => {
     e.preventDefault();
+
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
+    const photo = document.getElementById('photo').files[0];
 
-    updateSettings({name, email}, 'data');
+    const form = new FormData();
+    form.append('name', name)
+    form.append('email', email)
+    form.append('photo', photo)
+    console.log(form)
+
+    updateSettings(form, 'data');
   })
 }
 

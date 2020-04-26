@@ -9,8 +9,11 @@ const {
   deleteUser,
   getMe,
   updateMe,
-  deleteMe
+  deleteMe,
+  uploadUserPhoto,
+  resizeUserPhoto
 } = require('./../controllers/userController.js');
+
 const {
   signup,
   login,
@@ -32,7 +35,12 @@ router.patch('/resetPassword/:token', resetPassword)
 router.use(protect);
 router.patch('/updateMyPassword', updatePassword)
 router.get('/me', getMe, getUser);
-router.patch('/updateMe', updateMe)
+router.patch(
+  '/updateMe',
+  uploadUserPhoto,
+  resizeUserPhoto,
+  updateMe
+)
 router.delete('/deleteMe', deleteMe)
 
 // all routes  after this point are authorized only to admin

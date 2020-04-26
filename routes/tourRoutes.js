@@ -12,7 +12,9 @@ const {
   updateTour,
   deleteTour,
   getToursWithin,
-  getDistances
+  getDistances,
+  uploadTourImages,
+  resizeTourImages
 } = require('./../controllers/tourController.js');
 
 const {
@@ -53,6 +55,8 @@ router.route('/:id')
   .patch(
     protect,
     restrictTo('admin', 'lead-guide'),
+    uploadTourImages,
+    resizeTourImages,
     updateTour
   )
   .delete(
