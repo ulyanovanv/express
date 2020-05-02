@@ -49,7 +49,6 @@ const prodError = (err, req, res) => {
   // API
   if (req.originalUrl.startsWith('/api')) {
     //operational, trusted errors
-    //console.log(err.isOperational)
     if (err.isOperational) {
       res.status(err.statusCode).json({
         message: err.message,
@@ -57,8 +56,6 @@ const prodError = (err, req, res) => {
       });
       //programming or other unknown errors, do not leak details on client
     } else {
-      console.log('error', err);
-
       res.status(500).json({
         status: 'error',
         message: 'Something went wrong'
@@ -73,8 +70,6 @@ const prodError = (err, req, res) => {
       })
       //programming or other unknown errors, do not leak details on client
     } else {
-      console.log('error', err);
-
       res.status(err.statusCode).render('error', {
         title: 'Something went wrong!',
         msg: 'Please try again later'

@@ -78,7 +78,6 @@ reviewSchema.pre(/^find/, function(next) {
 
 reviewSchema.pre(/^findOneAnd/, async function(next) {
   this.rev = await this.findOne(); // access to the current docuemnt
-  console.log(this.rev)
 
   next();
 });
