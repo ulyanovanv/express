@@ -13,7 +13,7 @@ block content
             nav.user-view__menu
                 ul.side-nav
                     +navItem('#', 'Settings', 'icon-settings', true)
-                    +navItem('#', 'My bookings', 'icon-briefcase')
+                    +navItem('/my-tours', 'My bookings', 'icon-briefcase')
                     +navItem('#', 'My reviews', 'icon-star')
                     +navItem('#', 'Billing', 'icon-credit-card')
                 - if (user.role === 'admin')

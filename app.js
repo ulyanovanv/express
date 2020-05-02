@@ -12,6 +12,7 @@ const userRouter = require('./routes/userRoutes.js');
 const tourRouter = require('./routes/tourRoutes.js');
 const reviewRouter = require('./routes/reviewRoutes.js');
 const viewRouter = require('./routes/viewRoutes.js');
+const bookingRouter = require('./routes/bookingRoutes.js');
 const AppError = require('./utils/appError.js');
 const globalErrorhandle = require('./controllers/errorController.js');
 const app = express();
@@ -79,6 +80,7 @@ app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
+app.use('/api/v1/bookings', bookingRouter);
 
 //no route was matched? - error handling
 app.all('*', (req, res, next) => {

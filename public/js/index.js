@@ -1,7 +1,8 @@
 import '@babel/polyfill'; //to support old browsers
 import { displayMap } from './mapbox.js';
 import { login, logout } from './login.js';
-import { updateSettings } from './updateSettings.js'
+import { updateSettings } from './updateSettings.js';
+import { bookTour } from './stripe.js';
 
 const map = document.getElementById('map');
 const loginForm = document.querySelector('.form--login');
@@ -10,6 +11,7 @@ const updateForm = document.querySelector('.form-user-data');
 const updatePasswordForm = document.querySelector('.form-user-settings');
 const btnSaveSettings = document.querySelector('.btn-save-seetings');
 const btnSavePassword = document.querySelector('.btn-save-password');
+const btnBook = document.getElementById('book-tour');
 
 //MAPBOX
 if (map) {
@@ -66,5 +68,13 @@ if (updatePasswordForm) {
     document.getElementById('password-current').value = '';
     document.getElementById('password').value = '';
     document.getElementById('password-confirm').value = '';
+  })
+}
+
+if (btnBook) {
+  btnBook.addEventListener('click', e => {
+    e.target.textContent = 'Processing...';
+    const { tourId } = e.target.dataset;
+    bookTour(tourId);
   })
 }
