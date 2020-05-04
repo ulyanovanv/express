@@ -3,9 +3,14 @@ const router = express.Router();
 
 const { getOverview, getTour, login, getAccount, updateUserData, getMyTours } = require('./../controllers/viewsController.js');
 const { isLoggedIn, protect } = require('./../controllers/authController.js');
-const { createBookingCheckout } = require('./../controllers/bookingController.js');
+// const { createBookingCheckout } = require('./../controllers/bookingController.js');
 
-router.get('/', createBookingCheckout, isLoggedIn, getOverview);
+router.get(
+  '/',
+  // createBookingCheckout,
+  isLoggedIn,
+  getOverview
+);
 router.get('/tour/:slug', isLoggedIn, getTour);
 router.get('/login', isLoggedIn, login);
 router.get('/me', protect, getAccount);

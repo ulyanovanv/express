@@ -15,6 +15,7 @@ const tourRouter = require('./routes/tourRoutes.js');
 const reviewRouter = require('./routes/reviewRoutes.js');
 const viewRouter = require('./routes/viewRoutes.js');
 const bookingRouter = require('./routes/bookingRoutes.js');
+const { webhookCheckout } = require('./controllers/bookingController.js');
 const AppError = require('./utils/appError.js');
 const globalErrorhandle = require('./controllers/errorController.js');
 const app = express();
@@ -48,6 +49,8 @@ const limiter = rateLimit({
   message: 'too many from this Ip, please try again in an hour'
 });
 app.use('/api', limiter);
+
+app.post('/webhook-checkout', express.raw({type: 'application/json'}), webhookCheckout); //we need response in raw form, not json format
 
 // Body parser, reading data from body into req.body
 app.use(express.json({
