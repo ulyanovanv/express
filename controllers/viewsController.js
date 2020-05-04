@@ -78,4 +78,13 @@ const getMyTours = catchAsync(async (req, res, next) => {
   });
 });
 
-module.exports = { getOverview, getTour, login, getAccount, updateUserData, getMyTours }
+const alerts = (req, res, next) => {
+  const alert = req.query.alert;
+  if (alerts === 'booking') {
+    res.locals.alert = 'Your booking was successful! Please check your email for a confirmation. If ypur booking does not show up immediately, please come back later';
+  }
+
+  next();
+}
+
+module.exports = { getOverview, getTour, login, getAccount, updateUserData, getMyTours, alerts }

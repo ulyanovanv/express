@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
-const { getOverview, getTour, login, getAccount, updateUserData, getMyTours } = require('./../controllers/viewsController.js');
+const { getOverview, getTour, login, getAccount, updateUserData, getMyTours, alerts } = require('./../controllers/viewsController.js');
 const { isLoggedIn, protect } = require('./../controllers/authController.js');
 // const { createBookingCheckout } = require('./../controllers/bookingController.js');
+
+router.use(alerts);
 
 router.get(
   '/',
